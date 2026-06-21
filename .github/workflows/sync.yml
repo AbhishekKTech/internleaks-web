@@ -1,0 +1,31 @@
+name: Sync to Public Repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Private Repo
+        uses: actions/checkout@v3
+
+      - name: Sync and Push to Public Repo
+        run: |
+          # 1. Setup Git configuration
+          git config --global user.name "AbhishekKTech"
+          git config --global user.email "abhishek859573@gmail.com"
+          
+          # 2. Clone the public repo securely using your token
+          git clone https://${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/AbhishekKTech/internleaks-web.git public_repo
+          
+          # 3. Copy all updated files (except .git and public_repo itself)
+          rsync -av --exclude='.git' --exclude='public_repo' ./ public_repo/
+          
+          # 4. Commit and Force Push to the public repo
+          cd public_repo
+          git add .
+          git commit -m "Auto-sync update from private repo 🚀" || echo "No changes to commit"
+          git push https://${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/AbhishekKTech/internleaks-web.git main

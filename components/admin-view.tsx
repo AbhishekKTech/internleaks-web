@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { Trash2, ShieldCheck, Loader2, Search, User, CalendarDays, AlertTriangle } from "lucide-react"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://internleaks-backend-private.onrender.com";
+
 interface AdminViewProps {
   onNavigateBack: () => void
 }
@@ -20,7 +22,7 @@ export function AdminView({ onNavigateBack }: AdminViewProps) {
       const config = { headers: token ? { Authorization: `Bearer ${token}` } : {} }
 
       // Fetch ALL reports from the database
-      const response = await axios.get("http://localhost:8080/api/v1/reports/all", config)
+      const response = await axios.get(`${API_BASE_URL}/api/v1/reports/all`, config)
       const sortedData = response.data.sort((a: any, b: any) => b.id - a.id)
       setReports(sortedData)
     } catch (error) {
@@ -41,7 +43,7 @@ export function AdminView({ onNavigateBack }: AdminViewProps) {
       const token = localStorage.getItem("internleaks_token")
       const config = { headers: token ? { Authorization: `Bearer ${token}` } : {} }
 
-      await axios.delete(`http://localhost:8080/api/v1/reports/${id}`, config)
+      await axios.delete(`${API_BASE_URL}/api/v1/reports/${id}`, config)
       setReports(reports.filter(report => report.id !== id))
     } catch (error) {
       console.error("Delete failed:", error)

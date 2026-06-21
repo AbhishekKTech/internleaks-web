@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ShieldAlert, Sparkles, X, User, LayoutDashboard, Settings, LogOut, ShieldCheck } from "lucide-react"
+import { ShieldAlert, Sparkles, X, User, LayoutDashboard, Settings, LogOut, ShieldCheck, ScanLine, FileText } from "lucide-react"
 
 type View = "landing" | "wizard" | "analyzing" | "result" | "wall"
 
@@ -10,7 +10,7 @@ interface NavbarProps {
   credits: number
   isLoggedIn?: boolean
   userEmail?: string
-  userName?: string // 👉 YE NAYI LINE ADD KAR
+  userName?: string 
   onNavigate: (view: View) => void
   onOpenAuth?: () => void
   onLogout?: () => void
@@ -22,25 +22,24 @@ export function Navbar({ activeTab, credits, isLoggedIn = false, userEmail = "",
   const [showCreditsTooltip, setShowCreditsTooltip] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
 
-  
   const displayName = userName ? userName : (userEmail ? userEmail.split("@")[0] : "User")
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0B0F19]/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-8">
         
-        {/* Logo */}
-        <button onClick={() => onNavigate("landing")} className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#8b5cf6]/15 ring-1 ring-[#8b5cf6]/40">
-            <ShieldAlert className="h-5 w-5 text-[#8b5cf6]" />
+        {/* Left: Logo */}
+        <button onClick={() => onNavigate("landing")} className="flex items-center gap-2 transition-opacity hover:opacity-80 shrink-0">
+          <span className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-[#8b5cf6]/15 ring-1 ring-[#8b5cf6]/40">
+            <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5 text-[#8b5cf6]" />
           </span>
-          <span className="text-lg font-bold tracking-tight text-white">
+          <span className="text-[14px] sm:text-lg font-bold tracking-tight text-white">
             INTERN<span className="text-[#8b5cf6]">LEAKS</span>
           </span>
         </button>
 
-        {/* Desktop Tabs */}
-        <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-md sm:flex">
+        {/* Center Tabs: DESKTOP ONLY */}
+        <nav className="hidden sm:flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-md shrink-0">
           <button
             onClick={() => onNavigate("landing")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
@@ -49,6 +48,7 @@ export function Navbar({ activeTab, credits, isLoggedIn = false, userEmail = "",
           >
             Scanner
           </button>
+          
           <button
             onClick={() => onNavigate("wall")}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
@@ -59,21 +59,34 @@ export function Navbar({ activeTab, credits, isLoggedIn = false, userEmail = "",
           </button>
         </nav>
 
-        {/* Right Side Actions (Credits & Profile) */}
-        <div className="flex items-center gap-3">
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+
+          {/* MOBILE ONLY: Dynamic Icon Button */}
+          <button
+            onClick={() => onNavigate(activeTab === "scanner" ? "wall" : "landing")}
+            className="sm:hidden flex h-[34px] w-[34px] items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors hover:bg-white/10"
+            title={activeTab === "scanner" ? "Go to Scam Wall" : "Go to Scanner"}
+          >
+            {activeTab === "scanner" ? (
+              <FileText className="h-[18px] w-[18px] text-[#a78bfa]" /> // FileText for Scam Wall
+            ) : (
+              <ScanLine className="h-[18px] w-[18px] text-[#a78bfa]" /> // ScanLine for Scanner
+            )}
+          </button>
           
           {/* CREDITS BUTTON */}
           <div className="relative">
             <button
               onClick={() => {
                 setShowCreditsTooltip(!showCreditsTooltip)
-                setShowProfileMenu(false) // Doosra menu band kar do
+                setShowProfileMenu(false)
               }}
-              className="flex items-center gap-2 rounded-full border border-[#8b5cf6]/30 bg-[#8b5cf6]/10 px-3 py-1.5 backdrop-blur-md transition-colors hover:bg-[#8b5cf6]/20"
+              className="flex items-center gap-1 sm:gap-2 rounded-full border border-[#8b5cf6]/30 bg-[#8b5cf6]/10 px-2.5 py-1.5 sm:px-3 sm:py-1.5 backdrop-blur-md transition-colors hover:bg-[#8b5cf6]/20"
             >
-              <Sparkles className="h-4 w-4 text-[#8b5cf6]" />
-              <span className="text-sm font-semibold text-white">
-                Credits: {credits}
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#8b5cf6]" />
+              <span className="text-[13px] sm:text-sm font-semibold text-white">
+                <span className="hidden sm:inline">Credits: </span>{credits}
               </span>
             </button>
 
@@ -100,18 +113,18 @@ export function Navbar({ activeTab, credits, isLoggedIn = false, userEmail = "",
             )}
           </div>
 
-          {/* PROFILE BUTTON (Only shows when logged in) */}
+          {/* PROFILE BUTTON */}
           {isLoggedIn && (
             <div className="relative">
               <button
                 onClick={() => {
                   setShowProfileMenu(!showProfileMenu)
-                  setShowCreditsTooltip(false) // Doosra menu band kar do
+                  setShowCreditsTooltip(false)
                 }}
-                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 pl-1 pr-3 py-1 transition-colors hover:bg-white/10"
+                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 sm:py-1 sm:pl-1 sm:pr-3 transition-colors hover:bg-white/10"
               >
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#8b5cf6]">
-                  <User className="h-3.5 w-3.5 text-white" />
+                <div className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#8b5cf6]">
+                  <User className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-white" />
                 </div>
                 <span className="hidden max-w-[100px] truncate text-sm font-medium text-white sm:block">
                   {displayName}
@@ -151,25 +164,22 @@ export function Navbar({ activeTab, credits, isLoggedIn = false, userEmail = "",
                     </button>
                   </div>
 
-                  {/* Admin Access sirf teri email par */}
-                {userEmail === "admin@example.com" && (
-                  <button
-                    onClick={() => {
-                      onNavigate("admin" as any)
-                      setShowProfileMenu(false)
-                    }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#8b5cf6] transition-colors hover:bg-white/5 hover:text-[#a78bfa]"
-                  >
-                    <ShieldCheck className="h-4 w-4" />
-                    Admin Panel
-                  </button>
-                )}
-
+                  {userEmail === "admin@example.com" && (
+                    <button
+                      onClick={() => {
+                        onNavigate("admin" as any)
+                        setShowProfileMenu(false)
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#8b5cf6] transition-colors hover:bg-white/5 hover:text-[#a78bfa]"
+                    >
+                      <ShieldCheck className="h-4 w-4" />
+                      Admin Panel
+                    </button>
+                  )}
                 </div>
               )}
             </div>
           )}
-
         </div>
       </div>
     </header>

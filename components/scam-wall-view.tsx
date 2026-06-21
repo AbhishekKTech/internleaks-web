@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { AnalysisDetail } from "@/components/analysis-detail"
-import { AlertTriangle, Flame, CalendarDays, Loader2 } from "lucide-react"
+import { AlertTriangle, CalendarDays, Loader2 } from "lucide-react"
 
 interface BackendReport {
   id: number
@@ -19,7 +19,7 @@ interface BackendReport {
   createdAt: string
   riskPercentage?: number
   verdict?: string
-  redFlags?: any // 🔥 FIX: Ab yeh Array ya String dono ho sakta hai
+  redFlags?: any // Can be either an array or a string
   companyWebsite?: string
   hrEmailDomain?: string
   paymentDemanded?: string
@@ -94,12 +94,12 @@ export function ScamWallView({ reports, isLoading = false }: ScamWallViewProps) 
           {reports.map((report) => {
             const style = getRiskStyle(report.scamType)
 
-            // 🔥 CRASH FIX: Smart Logic jo Array aur String dono ko bina crash hue handle karega
+            // Safely handle both array and string values
             let redFlagsArray: string[] = [];
             if (Array.isArray(report.redFlags)) {
-              redFlagsArray = report.redFlags; // Submit karte time yeh chalega
+              redFlagsArray = report.redFlags;
             } else if (typeof report.redFlags === "string" && report.redFlags.trim() !== "") {
-              redFlagsArray = report.redFlags.split(" | "); // Refresh (DB load) ke time yeh chalega
+              redFlagsArray = report.redFlags.split(" | ");
             }
 
             const displayCompanyName = report.company?.name || report.companyName || "Unknown Company"
@@ -115,13 +115,11 @@ export function ScamWallView({ reports, isLoading = false }: ScamWallViewProps) 
                   verdict: displayVerdict, 
                   redFlags: redFlagsArray,
                   riskPercentage: displayRisk,
-                  // 🔥 MISSING DATA FIX: Modal context ke liye data
                   companyWebsite: report.companyWebsite || "Not provided",
                   hrEmailDomain: report.hrEmailDomain || "Not provided",
                   paymentDemanded: report.paymentDemanded || "Not disclosed",
                   interviewTaken: report.interviewTaken || "Not disclosed"
                 })}
-                // ... yahan se neeche ka <button> ka HTML design same rahega ...
                 className={`group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 p-5 text-left backdrop-blur-md transition-all hover:bg-white/[0.07] ${style.hover}`}
               >
                 <div>
@@ -130,7 +128,6 @@ export function ScamWallView({ reports, isLoading = false }: ScamWallViewProps) 
                       <AlertTriangle className="h-3 w-3" />
                       {style.label}
                     </span>
-                    {/* Yahan Risk Score display ho raha hai */}
                     <span className="text-xs font-bold text-white/40 group-hover:text-white/70">
                       {displayRisk}% Risk
                     </span>

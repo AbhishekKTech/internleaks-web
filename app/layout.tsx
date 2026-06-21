@@ -1,6 +1,9 @@
+import { OAuthSync } from '@/components/oauth-sync'
+import { Providers } from './providers'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { Toaster } from 'sonner' // Sonner Toaster import
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
@@ -32,8 +35,13 @@ export default function RootLayout({
       className={`dark ${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="font-sans antialiased bg-[#0B0F19] text-white">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <Providers>
+          <OAuthSync />
+          {children}
+          {/* Toaster component added globally */}
+          <Toaster theme="dark" position="bottom-right" richColors />
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </Providers>
       </body>
     </html>
   )

@@ -29,7 +29,7 @@ export function ResultView({
     setReported(true)
   }
 
-  // 👉 NAYA FIX: Remove Emojis and unsupported characters so jsPDF doesn't crash
+  // Remove emojis and unsupported characters so jsPDF doesn't crash
   const sanitizeText = (str: string) => {
     if (!str) return ""
     // Only allow standard ASCII characters (removes emojis and weird symbols)
@@ -40,7 +40,7 @@ export function ResultView({
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.getWidth()
 
-    // 🎨 1. HEADER (BRANDING)
+    // 1. Header (branding)
     doc.setFillColor(11, 15, 25)
     doc.rect(0, 0, pageWidth, 40, "F")
 
@@ -55,7 +55,7 @@ export function ResultView({
     doc.text("Automated AI Threat & Fraud Analysis Report", 14, 28)
     doc.text(`Report ID: ILX-${report.id} | Date: ${new Date().toLocaleDateString()}`, 14, 34)
 
-    // 📋 2. COMPANY CONTEXT SECTION
+    // 2. Company context section
     doc.setTextColor(0, 0, 0)
     doc.setFontSize(14)
     doc.setFont("helvetica", "bold")
@@ -69,7 +69,7 @@ export function ResultView({
     doc.text(`Payment Demanded: ${sanitizeText(report.paymentDemanded)}`, 14, 86)
     doc.text(`Interview Taken: ${sanitizeText(report.interviewTaken)}`, 14, 94)
 
-    // ⚠️ 3. AI VERDICT & RISK SCORE
+    // 3. AI verdict and risk score
     doc.setFontSize(14)
     doc.setFont("helvetica", "bold")
     doc.text("AI Investigation Result", 14, 110)
@@ -87,7 +87,7 @@ export function ResultView({
 
     const verdictHeight = splitVerdict.length * 5
 
-    // 🚩 4. RED FLAGS SECTION
+    // 4. Red flags section
     doc.setTextColor(0, 0, 0)
     doc.setFontSize(14)
     doc.setFont("helvetica", "bold")
@@ -99,7 +99,7 @@ export function ResultView({
     yPosition += 10
     
     report.redFlags.forEach((flag, index) => {
-      // Har string ko sanitize kar rahe hain taaki emoji pdf na tode
+      // Sanitize each string so emojis do not break the PDF
       const cleanFlag = sanitizeText(flag)
       const splitText = doc.splitTextToSize(`${index + 1}. ${cleanFlag}`, pageWidth - 28)
       
@@ -112,7 +112,7 @@ export function ResultView({
       yPosition += splitText.length * 5 + 4
     })
 
-    // ⚖️ 5. STRICT LEGAL DISCLAIMER
+    // 5. Legal disclaimer
     if (yPosition > 230) {
         doc.addPage()
         yPosition = 20

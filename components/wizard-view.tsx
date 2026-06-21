@@ -66,7 +66,7 @@ export function WizardView({ input, onChange, onSubmit }: WizardViewProps) {
         </p>
 
         <div className="mt-8 flex flex-col gap-6">
-          {/* Q1 */}
+          {/* Company name */}
           <div className="flex flex-col gap-2">
             <Label className="text-white/80">
               Company Name <span className="text-[#ef4444]">*</span>
@@ -79,7 +79,7 @@ export function WizardView({ input, onChange, onSubmit }: WizardViewProps) {
             />
           </div>
 
-          {/* Q2 */}
+          {/* Company website */}
           <div className="flex flex-col gap-2">
             <Label className="text-white/80">
               Company Website{" "}
@@ -93,7 +93,7 @@ export function WizardView({ input, onChange, onSubmit }: WizardViewProps) {
             />
           </div>
 
-          {/* Q3 */}
+          {/* Payment or security deposit */}
           <div className="flex flex-col gap-2.5">
             <Label className="text-white/80">
               Did they ask for any payment or security deposit?
@@ -104,7 +104,7 @@ export function WizardView({ input, onChange, onSubmit }: WizardViewProps) {
             />
           </div>
 
-          {/* Q4 */}
+          {/* Interview or assessment */}
           <div className="flex flex-col gap-2.5">
             <Label className="text-white/80">
               Have they taken any proper interview or assessment?
@@ -115,7 +115,7 @@ export function WizardView({ input, onChange, onSubmit }: WizardViewProps) {
             />
           </div>
 
-          {/* Q5 */}
+          {/* HR email domain */}
           <div className="flex flex-col gap-2">
             <Label className="text-white/80">
               What is the HR&apos;s email domain?
@@ -128,7 +128,7 @@ export function WizardView({ input, onChange, onSubmit }: WizardViewProps) {
             />
           </div>
 
-          {/* Q6 */}
+          {/* Scam concerns */}
           <div className="flex flex-col gap-2">
             <Label className="text-white/80">
               Why do you feel this is a scam?

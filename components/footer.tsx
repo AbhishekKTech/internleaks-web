@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "sonner"
 import { useState } from "react"
 import {
   Dialog,
@@ -21,6 +22,34 @@ const inputClass =
 
 export function Footer() {
   const [open, setOpen] = useState<LegalKey>(null)
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    const formData = new FormData(e.currentTarget);
+    // Add Web3Forms API key from environment variables
+    formData.append("access_key", process.env.NEXT_PUBLIC_WEB3FORMS_KEY as string);
+    formData.append("subject", "New Contact/Appeal Submission from Internleaks");
+    
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", { 
+        method: "POST", 
+        body: formData 
+      });
+      if (res.ok) {
+        toast.success("Message Sent Successfully! We will review it.");
+        setOpen(null); // Modal close kar dega
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
+    setIsSubmitting(false);
+  };
 
   return (
     <footer className="mt-16 border-t border-white/10 bg-[#0B0F19]">
@@ -54,7 +83,7 @@ export function Footer() {
         </nav>
 
         <a
-          href="https://www.linkedin.com"
+          href="https://www.linkedin.com/in/abhishekktech/"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 text-xs text-white/40 transition-colors hover:text-[#8b5cf6]"
@@ -143,16 +172,14 @@ export function Footer() {
             </DialogDescription>
           </DialogHeader>
           <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              setOpen(null)
-            }}
+            onSubmit={handleFormSubmit}
             className="flex flex-col gap-4"
           >
             <div className="flex flex-col gap-2">
               <Label className="text-white/80">Your Name</Label>
               <Input
                 type="text"
+                name="name"
                 required
                 placeholder="e.g. Abhishek Kumar"
                 className={inputClass}
@@ -162,6 +189,7 @@ export function Footer() {
               <Label className="text-white/80">Your Email</Label>
               <Input
                 type="email"
+                name="email"
                 required
                 placeholder="you@example.com"
                 className={inputClass}
@@ -173,6 +201,7 @@ export function Footer() {
               </Label>
               <Input
                 type="text"
+                name="company"
                 placeholder="e.g. Stellar Tech Solutions Pvt Ltd"
                 className={inputClass}
               />
@@ -180,6 +209,7 @@ export function Footer() {
             <div className="flex flex-col gap-2">
               <Label className="text-white/80">Message / Appeal Details</Label>
               <Textarea
+                name="message"
                 required
                 rows={4}
                 placeholder="Describe your concern or appeal…"
@@ -188,9 +218,10 @@ export function Footer() {
             </div>
             <Button
               type="submit"
-              className="h-11 w-full rounded-xl bg-[#8b5cf6] font-semibold text-white hover:bg-[#7c3aed]"
+              disabled={isSubmitting}
+              className="h-11 w-full rounded-xl bg-[#8b5cf6] font-semibold text-white hover:bg-[#7c3aed] disabled:opacity-50"
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </DialogContent>

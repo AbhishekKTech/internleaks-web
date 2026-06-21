@@ -1,5 +1,6 @@
 "use client"
 
+import { signIn } from "next-auth/react";
 import { useState } from "react"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Mail, Sparkles, AlertCircle, Loader2, CheckCircle2 } from "lucide-react"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://internleaks-backend-private.onrender.com";
 
 interface AuthModalProps {
   open: boolean
@@ -30,7 +33,7 @@ export function AuthModal({
 }: AuthModalProps) {
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   
-  // Naye States User Input aur API handling ke liye
+  // New state variables for user input and API handling
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -39,10 +42,10 @@ export function AuthModal({
 
   const toggleMode = () => {
     setMode((prev) => (prev === "signin" ? "signup" : "signin"))
-    setErrorMsg("") // Mode switch karne par error hata do
+    setErrorMsg("") // Clear error when switching modes
   }
 
-  // Asli API Call Function
+  // Main API call handler
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -52,36 +55,36 @@ export function AuthModal({
       let response;
       if (mode === "signup") {
         // Register API Call
-        response = await axios.post("http://localhost:8080/api/v1/auth/register", {
+        response = await axios.post(`${API_BASE_URL}/api/v1/auth/register`, {
           name,
           email,
           password
         })
       } else {
         // Login API Call
-        response = await axios.post("http://localhost:8080/api/v1/auth/authenticate", {
+        response = await axios.post(`${API_BASE_URL}/api/v1/auth/authenticate`, {
           email,
           password
         })
       }
 
-      // Agar backend ne token aur credits bheja hai
+      // If backend returned a token and credits
       if (response.status === 200 && response.data.token) {
         localStorage.setItem("internleaks_token", response.data.token)
         localStorage.setItem("internleaks_credits", response.data.credits.toString())
-        localStorage.setItem("internleaks_user_email", email) // Sync API ke liye zaroori hai
+        localStorage.setItem("internleaks_user_email", email) // needed for sync API
         
         setName("")
         setEmail("")
         setPassword("")
         
-        // Custom updated parameters pass kar rahe hain
+        // Call parent with mode and credits
         onAuthenticated(mode, response.data.credits) 
       }
 
     } catch (error: any) {
       console.error("Auth Error:", error)
-      // Agar backend se error aaye (jaise Wrong Password ya Email exists)
+      // If backend returns an error (e.g., wrong password or email exists)
       setErrorMsg(
         mode === "signin" 
           ? "Invalid email or password. Please try again." 
@@ -94,7 +97,7 @@ export function AuthModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* 👉 Yahan max-h-[90vh] aur overflow-y-auto add kiya hai */}
+      {/* Added max height and vertical scroll for long content */}
       <DialogContent className="border-white/10 bg-[#0B0F19] text-white sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           
@@ -111,7 +114,7 @@ export function AuthModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* 👉 NAYA CODE: Benefits of Registering (Sirf Sign Up mode mein dikhega) */}
+        {/* New: Benefits of registering (shown only in Sign Up mode) */}
         {mode === "signup" && (
           <div className="mt-1 rounded-xl border border-[#8b5cf6]/20 bg-[#8b5cf6]/10 p-4">
             <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-[#c4b5fd]">
@@ -142,11 +145,22 @@ export function AuthModal({
           </div>
         )}
 
+        {/* Google and GitHub buttons with onClick handlers */}
         <div className="mt-2 flex flex-col gap-3">
-          <Button variant="outline" className="h-11 w-full justify-center gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white">
+          <Button 
+            type="button"
+            onClick={() => signIn("google")} 
+            variant="outline" 
+            className="h-11 w-full justify-center gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+          >
             <GoogleIcon className="h-5 w-5" /> Continue with Google
           </Button>
-          <Button variant="outline" className="h-11 w-full justify-center gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white">
+          <Button 
+            type="button"
+            onClick={() => signIn("github")}
+            variant="outline" 
+            className="h-11 w-full justify-center gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+          >
             <GithubIcon className="h-5 w-5" /> Continue with GitHub
           </Button>
         </div>

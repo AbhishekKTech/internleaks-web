@@ -6,7 +6,7 @@ import { UploadCloud, FileText, Lock, ScanLine, X } from "lucide-react"
 
 interface LandingViewProps {
   onVerify: () => void
-  onFileSelect?: (file: File) => void // Ye nayi line add kar
+  onFileSelect?: (file: File) => void // New line to handle file selection
 }
 
 export function LandingView({ onVerify, onFileSelect }: LandingViewProps) {

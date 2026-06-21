@@ -3,6 +3,7 @@
 import { AdminView } from "@/components/admin-view"
 import { useState, useEffect } from "react"
 import axios from "axios"
+import { toast } from "sonner" // Sonner toast
 import { Navbar } from "@/components/navbar"
 import { LandingView } from "@/components/landing-view"
 import { WizardView } from "@/components/wizard-view"
@@ -19,6 +20,8 @@ import {
   type ScamReport,
   type WizardInput,
 } from "@/lib/internleaks-data"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://internleaks-backend-private.onrender.com";
 
 type View = "landing" | "wizard" | "analyzing" | "result" | "wall" | "dashboard" | "admin"
 
@@ -61,7 +64,7 @@ export default function Page() {
     const fetchAllReports = async () => {
       setIsWallLoading(true) 
       try {
-        const response = await axios.get("http://localhost:8080/api/v1/reports/all");
+        const response = await axios.get(`${API_BASE_URL}/api/v1/reports/all`);
         const sortedData = response.data.sort((a: any, b: any) => b.id - a.id);
         setReports(sortedData); 
       } catch (error) {
@@ -76,7 +79,7 @@ export default function Page() {
   const handleVerify = () => {
     if (credits > 0) setView("wizard")
     else {
-      if (isLoggedIn) alert("⚠️ You have 0 credits left! Razorpay integration to buy more credits is coming soon.")
+      if (isLoggedIn) toast.warning("⚠️ You have 0 credits left! Razorpay integration to buy more credits is coming soon.") // warn user about zero credits
       else setAuthOpen(true)
     }
   }
@@ -110,7 +113,7 @@ export default function Page() {
 
   const handleWizardSubmit = async () => {
     if (credits <= 0) {
-      if (isLoggedIn) alert("⚠️ You have 0 credits left! Razorpay integration to buy more credits is coming soon.")
+      if (isLoggedIn) toast.warning("⚠️ You have 0 credits left! Razorpay integration to buy more credits is coming soon.") // warn user about zero credits
       else setAuthOpen(true)
       return
     }
@@ -123,7 +126,7 @@ export default function Page() {
       const email = localStorage.getItem("internleaks_user_email");
       const token = localStorage.getItem("internleaks_token");
       if (token && email) {
-        axios.post("http://localhost:8080/api/v1/auth/update-credits", {
+        axios.post(`${API_BASE_URL}/api/v1/auth/update-credits`, {
           email: email,
           credits: nextCredits
         }).catch(err => console.error("Failed to sync credits with database:", err));
@@ -142,7 +145,6 @@ export default function Page() {
         const formData = new FormData()
         formData.append("file", selectedFile)
         
-        // 👉 Saari user-provided details ab backend ko jaayengi
         formData.append("companyName", wizard.companyName || "Unknown")
         formData.append("companyWebsite", wizard.companyWebsite || "")
         formData.append("paymentDemanded", wizard.paymentDemanded || "Not Sure")
@@ -150,14 +152,13 @@ export default function Page() {
         formData.append("hrEmailDomain", wizard.hrEmailDomain || "")
         formData.append("userSuspicionFeedback", wizard.userSuspicionFeedback || "")
         
-        const response = await axios.post("http://localhost:8080/api/v1/analyze-image", formData, {
+        const response = await axios.post(`${API_BASE_URL}/api/v1/analyze-image`, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         })
         rawResponseData = response.data;
       } else {
-        // Text scanner ka flow (Agar document upload nahi kiya)
         const jobContext = `Website: ${wizard.companyWebsite}. Payment: ${wizard.paymentDemanded}. Interview: ${wizard.interviewTaken}. HR Email: ${wizard.hrEmailDomain}. User Suspicion: ${wizard.userSuspicionFeedback}`
-        const response = await axios.post("http://localhost:8080/api/v1/analyze", {
+        const response = await axios.post(`${API_BASE_URL}/api/v1/analyze`, {
           companyName: wizard.companyName || "Unknown",
           jobDetails: jobContext
         })
@@ -166,17 +167,14 @@ export default function Page() {
 
       // 🛠️ BULLETPROOF AI OUTPUT CLEANUP
       if (typeof rawResponseData === "string") {
-        // 1. Markdown ticks hatao
         let cleanString = rawResponseData.replace(/```json/g, "").replace(/```/g, "").trim();
         
-        // 2. Sirf JSON block extract karo (extra text hatao)
         const startIdx = cleanString.indexOf('{');
         const endIdx = cleanString.lastIndexOf('}');
         if (startIdx !== -1 && endIdx !== -1) {
           cleanString = cleanString.substring(startIdx, endIdx + 1);
         }
 
-        // 3. Fallback/Safe Parsing
         try {
           aiResult = JSON.parse(cleanString);
         } catch (parseError) {
@@ -234,7 +232,7 @@ export default function Page() {
                      : finalReport.verdict
           }
 
-          await axios.post("http://localhost:8080/api/v1/scan-history/add", historyPayload, {
+          await axios.post(`${API_BASE_URL}/api/v1/scan-history/add`, historyPayload, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           })
         } catch (err) {
@@ -244,7 +242,7 @@ export default function Page() {
 
     } catch (error: any) {
       console.error("AI Analysis Failed:", error)
-      alert("AI Engine fail ho gaya! Spring Boot console check karo (API key issue ho sakta hai).")
+      toast.error("AI Engine fail ho gaya! Spring Boot console check karo (API key issue ho sakta hai).") // AI engine error
       setView("landing")
     }
   }
@@ -268,21 +266,21 @@ export default function Page() {
         redFlags: report.redFlags.join(" | ") 
       }
 
-      const response = await axios.post("http://localhost:8080/api/v1/reports/add", backendPayload)
+      const response = await axios.post(`${API_BASE_URL}/api/v1/reports/add`, backendPayload)
       
       if (response.status === 200 || response.status === 201) {
         console.log("Data successfully saved in Spring Boot Database!", response.data)
         setReports((prev) => [report, ...prev])
-        alert("Report submitted successfully to the Scam Wall!")
+        toast.success("Report submitted successfully to the Scam Wall!") // notify success
       }
     } catch (error: any) {
       console.error("Backend connection error:", error)
       if (error.response) {
-        alert(`🚨 SERVER ERROR ${error.response.status}: Backend request fail ho gayi. Console dekho!`);
+        toast.error(`🚨 SERVER ERROR ${error.response.status}: Backend request failed. Check console.`); // server error
       } else if (error.request) {
-        alert(`🚨 NETWORK ERROR: Spring Boot server se connect nahi ho raha.`);
+        toast.error(`🚨 NETWORK ERROR: Could not reach Spring Boot server.`); // network error
       } else {
-        alert(`🚨 ERROR: ${error.message}`);
+        toast.error(`🚨 ERROR: ${error.message}`); // generic error
       }
     }
   }

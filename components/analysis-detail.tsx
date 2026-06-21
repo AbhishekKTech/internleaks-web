@@ -18,7 +18,7 @@ function metricColor(p: number) {
   return "#34d399"
 }
 
-// Verdict ke box ka color decide karne ke liye function
+// Decide verdict box color based on risk
 function getVerdictClasses(risk: number) {
   if (risk >= 75) return "border-[#ef4444]/30 bg-[#ef4444]/10 text-[#ef4444]"; // Red for High Risk
   if (risk >= 45) return "border-amber-400/30 bg-amber-400/10 text-amber-400"; // Amber for Medium Risk

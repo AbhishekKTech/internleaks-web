@@ -12,6 +12,8 @@ interface DashboardViewProps {
   onReportDeleted?: (id: number) => void 
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://internleaks-backend-private.onrender.com";
+
 export function DashboardView({ userEmail, userName, credits, onNavigateBack, onReportDeleted }: DashboardViewProps) {
   const [reports, setReports] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -26,10 +28,10 @@ export function DashboardView({ userEmail, userName, credits, onNavigateBack, on
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       };
 
-      // Ab sirf Reports fetch kar rahe hain
-      const reportsRes = await axios.get(`http://localhost:8080/api/v1/reports/user/${userEmail}`, config)
+      // Fetch reports for the user
+      const reportsRes = await axios.get(`${API_BASE_URL}/api/v1/reports/user/${userEmail}`, config)
       
-      // Nayi reports pehle dikhane ke liye sort kar diya
+      // Sort reports by newest first
       const sortedReports = reportsRes.data.sort((a: any, b: any) => b.id - a.id);
       setReports(sortedReports)
     } catch (error) {
@@ -55,7 +57,7 @@ export function DashboardView({ userEmail, userName, credits, onNavigateBack, on
 
     try {
       // Backend se direct delete
-      await axios.delete(`http://localhost:8080/api/v1/reports/${id}`, config)
+      await axios.delete(`${API_BASE_URL}/api/v1/reports/${id}`, config)
       
       // UI se turant hata do
       setReports(reports.filter(item => item.id !== id))

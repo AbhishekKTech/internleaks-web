@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import axios from "axios"
+import { useSession } from "next-auth/react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,7 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Settings, Loader2, AlertCircle } from "lucide-react"
+import { Settings, Loader2 } from "lucide-react"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://internleaks-backend-private.onrender.com";
 
 interface EditProfileModalProps {
   open: boolean
@@ -32,17 +36,16 @@ export function EditProfileModal({
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [msg, setMsg] = useState({ type: "", text: "" })
+  const { update } = useSession()
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setMsg({ type: "", text: "" })
 
     try {
       const token = localStorage.getItem("internleaks_token")
 
-      const response = await axios.post("http://localhost:8080/api/v1/auth/update-profile", 
+      const response = await axios.post(`${API_BASE_URL}/api/v1/auth/update-profile`, 
         {
           email: userEmail,
           name: name,
@@ -56,19 +59,22 @@ export function EditProfileModal({
       )
 
       if (response.status === 200) {
-        setMsg({ type: "success", text: "Profile updated successfully!" })
+        toast.success("Profile updated successfully!")
+        
         if (name) {
-            onProfileUpdated(name) 
+          onProfileUpdated(name)
+          await update({ name: name })
         }
+        
         setTimeout(() => {
-            onOpenChange(false) 
-            setMsg({ type: "", text: "" })
-            setPassword("")
+          onOpenChange(false)
+          setPassword("")
+          setName("")
         }, 1500)
       }
     } catch (error) {
       console.error("Update Error:", error)
-      setMsg({ type: "error", text: "Failed to update profile. Check backend logs." })
+      toast.error("Failed to update profile. Check backend logs.")
     } finally {
       setIsLoading(false)
     }
@@ -85,15 +91,6 @@ export function EditProfileModal({
             Edit Profile
           </DialogTitle>
         </DialogHeader>
-
-        {msg.text && (
-          <div className={`flex items-center gap-2 rounded-lg p-3 text-sm border ${
-              msg.type === "error" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-          }`}>
-            {msg.type === "error" ? <AlertCircle className="h-4 w-4 shrink-0" /> : <Settings className="h-4 w-4 shrink-0" />}
-            <p>{msg.text}</p>
-          </div>
-        )}
 
         <form onSubmit={handleUpdate} className="mt-2 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
