@@ -4,6 +4,25 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { Trash2, ShieldAlert, Loader2, Sparkles, FileText } from "lucide-react"
 
+function getDashboardRiskStyle(risk: number) {
+  if (risk >= 75) {
+    return {
+      badge: "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20",
+      hover: "hover:border-[#ef4444]/30 hover:shadow-[#ef4444]/5"
+    }
+  }
+  if (risk >= 45) {
+    return {
+      badge: "bg-amber-400/10 text-amber-400 border-amber-400/20",
+      hover: "hover:border-amber-400/30 hover:shadow-amber-400/5"
+    }
+  }
+  return {
+    badge: "bg-[#34d399]/10 text-[#34d399] border-[#34d399]/20",
+    hover: "hover:border-[#34d399]/30 hover:shadow-[#34d399]/5"
+  }
+}
+
 interface DashboardViewProps {
   userEmail: string
   userName?: string
@@ -137,8 +156,12 @@ export function DashboardView({ userEmail, userName, credits, onNavigateBack, on
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {reports.map((report) => (
-              <div key={report.id} className="group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-[#0B0F19] p-5 shadow-lg transition-all hover:border-red-500/30 hover:shadow-red-500/5">
+            {reports.map((report) => {
+              const displayRisk = report.riskPercentage || (report.scamType?.includes("High") ? 95 : 65)
+              const style = getDashboardRiskStyle(displayRisk)
+
+              return (
+              <div key={report.id} className={`group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-[#0B0F19] p-5 shadow-lg transition-all ${style.hover}`}>
                 <div>
                   <div className="mb-4 flex items-start justify-between">
                     <h3 className="font-bold text-lg text-white truncate pr-2">
@@ -153,11 +176,11 @@ export function DashboardView({ userEmail, userName, credits, onNavigateBack, on
                     </button>
                   </div>
                   
-                  <span className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 border border-red-500/20">
+                  <span className={`mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold border ${style.badge}`}>
                     <ShieldAlert className="h-3 w-3"/> {report.scamType || "Suspicious"}
                   </span>
                   
-                  <p className="text-sm leading-relaxed text-white/70 mt-2">
+                  <p className="text-sm leading-relaxed text-white/70 mt-2 line-clamp-3">
                     {report.description}
                   </p>
                 </div>
@@ -165,7 +188,7 @@ export function DashboardView({ userEmail, userName, credits, onNavigateBack, on
                   Reported on: {new Date(report.createdAt).toLocaleDateString()}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

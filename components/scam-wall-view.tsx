@@ -31,10 +31,9 @@ interface ScamWallViewProps {
   isLoading?: boolean 
 }
 
-function getRiskStyle(scamType: string) {
-  const safeScamType = scamType || ""
-
-  if (safeScamType === "High Risk Fraud" || safeScamType.toLowerCase().includes("high")) {
+// String ki jagah ab Number lenge
+function getRiskStyle(risk: number) {
+  if (risk >= 75) {
     return {
       color: "text-[#ef4444]",
       border: "border-[#ef4444]/30",
@@ -43,12 +42,21 @@ function getRiskStyle(scamType: string) {
       label: "High Risk"
     }
   }
+  if (risk >= 45) {
+    return {
+      color: "text-amber-400",
+      border: "border-amber-400/30",
+      bg: "bg-amber-400/10",
+      hover: "hover:border-amber-400/40 hover:shadow-[0_0_30px_-10px_#fbbf24]",
+      label: "Medium Risk"
+    }
+  }
   return {
-    color: "text-amber-400",
-    border: "border-amber-400/30",
-    bg: "bg-amber-400/10",
-    hover: "hover:border-amber-400/40 hover:shadow-[0_0_30px_-10px_#fbbf24]",
-    label: "Suspicious"
+    color: "text-[#34d399]",
+    border: "border-[#34d399]/30",
+    bg: "bg-[#34d399]/10",
+    hover: "hover:border-[#34d399]/40 hover:shadow-[0_0_30px_-10px_#34d399]",
+    label: "Safe"
   }
 }
 
@@ -92,7 +100,8 @@ export function ScamWallView({ reports, isLoading = false }: ScamWallViewProps) 
         
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {reports.map((report) => {
-            const style = getRiskStyle(report.scamType)
+                    const displayRisk = report.riskPercentage || (report.scamType === "High Risk Fraud" ? 95 : 65)
+                    const style = getRiskStyle(displayRisk)
 
             // Safely handle both array and string values
             let redFlagsArray: string[] = [];
@@ -104,7 +113,6 @@ export function ScamWallView({ reports, isLoading = false }: ScamWallViewProps) 
 
             const displayCompanyName = report.company?.name || report.companyName || "Unknown Company"
             const displayVerdict = report.verdict || report.description || "No description available"
-            const displayRisk = report.riskPercentage || (report.scamType === "High Risk Fraud" ? 95 : 65)
 
             return (
               <button

@@ -2,12 +2,22 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Trash2, ShieldCheck, Loader2, Search, User, CalendarDays, AlertTriangle } from "lucide-react"
+import { Trash2, ShieldCheck, Loader2, Search, User, AlertTriangle } from "lucide-react"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://internleaks-backend-private.onrender.com";
 
 interface AdminViewProps {
   onNavigateBack: () => void
+}
+
+function getAdminRiskStyle(risk: number) {
+  if (risk >= 75) {
+    return "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/20"
+  }
+  if (risk >= 45) {
+    return "bg-amber-400/10 text-amber-400 border-amber-400/20"
+  }
+  return "bg-[#34d399]/10 text-[#34d399] border-[#34d399]/20"
 }
 
 export function AdminView({ onNavigateBack }: AdminViewProps) {
@@ -127,44 +137,45 @@ export function AdminView({ onNavigateBack }: AdminViewProps) {
                   </td>
                 </tr>
               ) : (
-                filteredReports.map((report) => (
-                  <tr key={report.id} className="transition-colors hover:bg-white/[0.02]">
-                    <td className="px-6 py-4 font-mono text-xs text-white/40">#{report.id}</td>
-                    <td className="px-6 py-4 font-medium text-white">
-                      {report.company?.name || report.companyName || "Unknown"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10">
-                          <User className="h-3 w-3 text-white/60" />
+                filteredReports.map((report) => {
+                  const displayRisk = report.riskPercentage || (report.scamType?.includes("High") ? 95 : 65)
+                  const badgeStyle = getAdminRiskStyle(displayRisk)
+
+                  return (
+                    <tr key={report.id} className="transition-colors hover:bg-white/[0.02]">
+                      <td className="px-6 py-4 font-mono text-xs text-white/40">#{report.id}</td>
+                      <td className="px-6 py-4 font-medium text-white">
+                        {report.company?.name || report.companyName || "Unknown"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10">
+                            <User className="h-3 w-3 text-white/60" />
+                          </div>
+                          <span className="truncate max-w-[150px]" title={report.userEmail}>
+                            {report.userEmail || "Anonymous"}
+                          </span>
                         </div>
-                        <span className="truncate max-w-[150px]" title={report.userEmail}>
-                          {report.userEmail || "Anonymous"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${badgeStyle}`}>
+                          {report.scamType || "Suspicious"}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                        report.scamType?.includes("High") 
-                          ? "bg-red-500/10 text-red-400 border border-red-500/20" 
-                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                      }`}>
-                        {report.scamType || "Suspicious"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-white/50">
-                      {new Date(report.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleDelete(report.id)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" /> Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-6 py-4 text-white/50">
+                        {new Date(report.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDelete(report.id)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
