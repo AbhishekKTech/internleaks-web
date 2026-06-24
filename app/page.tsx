@@ -245,7 +245,7 @@ export default function Page() {
 
     } catch (error: any) {
       console.error("AI Analysis Failed:", error)
-      toast.error("AI Engine fail ho gaya! Spring Boot console check karo (API key issue ho sakta hai).") // AI engine error
+      toast.error("We are facing high demand for AI analysis Try again later.") // AI engine error
       setView("landing")
     }
   }
