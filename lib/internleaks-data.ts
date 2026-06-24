@@ -15,7 +15,6 @@ export interface ScamReport {
   reportedAt: string // ISO LocalDateTime
   reportCount: number
 }
-
 // Wizard form state (subset of the report captured from the user)
 export interface WizardInput {
   companyName: string
